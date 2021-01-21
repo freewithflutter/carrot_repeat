@@ -131,8 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               children: [
                                 ClipRRect(
                                   child: Image.network(
-                                    snapshot.data.docs[index].data()['image'] ??
-                                        '',
+                                    snapshot.data.docs[index].data()['image'],
                                     width: 110,
                                     height: 110,
                                     fit: BoxFit.fill,

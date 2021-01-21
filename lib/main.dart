@@ -1,3 +1,4 @@
+import 'package:carrot_repeat/examdetail.dart';
 import 'package:carrot_repeat/examnote.dart';
 import 'package:carrot_repeat/provider/item_provider.dart';
 import 'package:carrot_repeat/screen/additem/additem_screen.dart';
@@ -25,13 +26,14 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Carrot Repeat',
-        home: App(),
+        home: Exam(),
         theme: ThemeData(
           primaryColor: Colors.white,
         ),
         routes: {
           ItemDetail.id: (context) => ItemDetail(),
           AddItem.id: (context) => AddItem(),
+          ExamDetail.id: (context) => ExamDetail(),
         },
       ),
     );
