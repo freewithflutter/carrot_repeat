@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
+import 'home.dart';
+import 'mypage/mypage_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -11,6 +13,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex;
+  var _pages = [
+    Home(),
+    MyPage(),
+  ];
   Widget appBarWidget() {
     return AppBar(
       elevation: 1,
@@ -39,36 +45,80 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget bottomNavigationBarWidget() {
-    return BottomNavigationBar(
-        onTap: (int index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        currentIndex: _selectedIndex,
-        items: [
-          BottomNavigationBarItem(
-              activeIcon: SvgPicture.asset('assets/svg/home_on.svg', width: 22),
-              icon: SvgPicture.asset('assets/svg/home_off.svg', width: 22),
-              label: '홈'),
-          BottomNavigationBarItem(
-            activeIcon: SvgPicture.asset('assets/svg/notes_on.svg', width: 22),
-            icon: SvgPicture.asset('assets/svg/notes_off.svg', width: 22),
-            label: '동네생활',
-          ),
-          BottomNavigationBarItem(
-              activeIcon: SvgPicture.asset('assets/svg/home_on.svg', width: 22),
-              icon: SvgPicture.asset('assets/svg/home_off.svg', width: 22),
-              label: '내 근처'),
-          BottomNavigationBarItem(
-              activeIcon: SvgPicture.asset('assets/svg/home_on.svg', width: 22),
-              icon: SvgPicture.asset('assets/svg/home_off.svg', width: 22),
-              label: '채팅'),
-          BottomNavigationBarItem(
-              activeIcon: SvgPicture.asset('assets/svg/home_on.svg', width: 22),
-              icon: SvgPicture.asset('assets/svg/home_off.svg', width: 22),
-              label: '나의 당'),
-        ]);
+    return Container(
+      decoration: BoxDecoration(
+          border: Border(
+              top: BorderSide(
+        width: 0.6,
+        color: Color(0xFFB3B3B3),
+      ))),
+      child: BottomNavigationBar(
+          onTap: (int index) {
+            setState(() {
+              _selectedIndex = index;
+            });
+          },
+          selectedFontSize: 13,
+          selectedItemColor: Colors.black,
+          type: BottomNavigationBarType.fixed,
+          currentIndex: _selectedIndex,
+          backgroundColor: Colors.white,
+          items: [
+            BottomNavigationBarItem(
+                activeIcon: Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child:
+                        SvgPicture.asset('assets/svg/home_on.svg', width: 22)),
+                icon: Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: SvgPicture.asset('assets/svg/home_off.svg', width: 22),
+                ),
+                label: '홈'),
+            BottomNavigationBarItem(
+              activeIcon: Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child:
+                      SvgPicture.asset('assets/svg/notes_on.svg', width: 22)),
+              icon: Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: SvgPicture.asset('assets/svg/notes_off.svg', width: 22),
+              ),
+              label: '동네생활',
+            ),
+            BottomNavigationBarItem(
+              activeIcon: Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: SvgPicture.asset('assets/svg/location_on.svg',
+                      width: 22)),
+              icon: Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child:
+                    SvgPicture.asset('assets/svg/location_off.svg', width: 22),
+              ),
+              label: '내 근처',
+            ),
+            BottomNavigationBarItem(
+              activeIcon: Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: SvgPicture.asset('assets/svg/chat_on.svg', width: 22)),
+              icon: Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: SvgPicture.asset('assets/svg/chat_off.svg', width: 22),
+              ),
+              label: '채팅',
+            ),
+            BottomNavigationBarItem(
+              activeIcon: Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: SvgPicture.asset('assets/svg/user_on.svg', width: 22)),
+              icon: Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: SvgPicture.asset('assets/svg/user_off.svg', width: 22),
+              ),
+              label: '나의당근',
+            ),
+          ]),
+    );
   }
 
   @override
