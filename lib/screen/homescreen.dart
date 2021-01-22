@@ -36,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               0),
-          offset: Offset(0, 80),
+          offset: Offset(0, 50),
           initialValue: selectedPlace,
           onSelected: (value) {
             setState(() {
