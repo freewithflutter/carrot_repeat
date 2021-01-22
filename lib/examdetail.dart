@@ -16,7 +16,11 @@ class ExamDetail extends StatelessWidget {
             .snapshots(),
         builder: (context, snapshot) {
           return Column(
-            children: [Image.network(snapshot.data.data()['image'])],
+            children: [
+              Hero(
+                  tag: Image.network(snapshot.data.data()['image']),
+                  child: Image.network(snapshot.data.data()['image']))
+            ],
           );
         });
   }

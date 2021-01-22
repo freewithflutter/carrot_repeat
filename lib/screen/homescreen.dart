@@ -20,6 +20,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
+    final store = FirebaseFirestore.instance;
+    print(store.collection('Items').doc('title'));
     super.initState();
   }
 
@@ -78,144 +80,148 @@ class _HomeScreenState extends State<HomeScreen> {
     final provider = Provider.of<ItemProvider>(context, listen: false);
     return Scaffold(
       appBar: appBarWidget(),
-      body: Builder(
-        // builder is used only for the snackbar, if you don't want the snackbar you can remove
-        // Builder from the tree
-        builder: (BuildContext context) => HawkFabMenu(
-          icon: AnimatedIcons.add_event,
-          fabColor: kMainColor,
-          iconColor: Colors.white,
-          items: [
-            HawkFabMenuItem(
-              label: '동네홍보',
-              ontap: () {
-                Scaffold.of(context)..hideCurrentSnackBar();
-                Scaffold.of(context).showSnackBar(
-                  SnackBar(content: Text('ui가 없습니')),
-                );
-              },
-              icon: Icon(Icons.home),
-              color: kMainColor,
-              labelColor: Colors.black,
-            ),
-            HawkFabMenuItem(
-              label: '중고거래',
-              ontap: () {
-                Navigator.pushNamed(context, AddItem.id);
-                Scaffold.of(context)..hideCurrentSnackBar();
-              },
-              icon: Icon(FontAwesomeIcons.pen),
-              color: kMainColor,
-              labelColor: Colors.black,
-            ),
-          ],
-          body: Container(
-            width: double.infinity,
-            child: StreamBuilder(
-                stream: FirebaseFirestore.instance
-                    .collection('Items')
-                    .where('place', isEqualTo: selectedPlace)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return ListView.separated(
-                      padding: EdgeInsets.fromLTRB(15, 25, 15, 20),
-                      itemBuilder: (BuildContext context, int index) {
-                        return GestureDetector(
-                          onTap: () {
-                            provider.selectedId = snapshot.data.docs[index].id;
-                            Navigator.pushNamed(context, ItemDetail.id);
-                          },
-                          child: Container(
-                            child: Row(
-                              children: [
-                                ClipRRect(
+      body: HawkFabMenu(
+        icon: AnimatedIcons.add_event,
+        fabColor: kMainColor,
+        iconColor: Colors.white,
+        items: [
+          HawkFabMenuItem(
+            label: '동네홍보',
+            ontap: () {
+              Scaffold.of(context)..hideCurrentSnackBar();
+              Scaffold.of(context).showSnackBar(
+                SnackBar(content: Text('ui가 없습니')),
+              );
+            },
+            icon: Icon(Icons.home),
+            color: kMainColor,
+            labelColor: Colors.black,
+          ),
+          HawkFabMenuItem(
+            label: '중고거래',
+            ontap: () {
+              Navigator.pushNamed(context, AddItem.id);
+              Scaffold.of(context).hideCurrentSnackBar();
+            },
+            icon: Icon(FontAwesomeIcons.pen),
+            color: kMainColor,
+            labelColor: Colors.black,
+          ),
+        ],
+        body: Container(
+          width: double.infinity,
+          child: StreamBuilder(
+              stream: FirebaseFirestore.instance
+                  .collection('Items')
+                  .where('place', isEqualTo: selectedPlace)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return ListView.separated(
+                    padding: EdgeInsets.fromLTRB(15, 25, 15, 20),
+                    itemBuilder: (BuildContext context, int index) {
+                      return GestureDetector(
+                        onTap: () {
+                          provider.selectedId = snapshot.data.docs[index].id;
+                          Navigator.pushNamed(context, ItemDetail.id);
+                        },
+                        child: Container(
+                          child: Row(
+                            children: [
+                              ClipRRect(
+                                child: Hero(
+                                  tag:
+                                      snapshot.data.docs[index].data()['image'],
                                   child: Image.network(
                                     snapshot.data.docs[index].data()['image'],
                                     width: 110,
                                     height: 110,
-                                    fit: BoxFit.fill,
-                                  ),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                Expanded(
-                                  child: Container(
-                                    height: 110,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          snapshot.data.docs[index]
-                                              .data()['title'],
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                              fontSize: 17,
-                                              fontWeight: FontWeight.w500),
-                                        ),
-                                        Text(
-                                          provider.itemLists[index].place,
-                                          style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.grey.shade500),
-                                        ),
-                                        SizedBox(
-                                          height: 6,
-                                        ),
-                                        Text(
-                                          '${NumberFormat('###,###,### 원').format(int.parse(snapshot.data.docs[index].data()['price']))}',
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w700),
-                                        ),
-                                        Text(
-                                            '${DateFormat('yyyy.MM.dd').format(DateTime.now())}'),
-                                        Expanded(
-                                          child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.end,
-                                            children: [
-                                              SvgPicture.asset(
-                                                'assets/svg/heart_off.svg',
-                                                width: 14,
-                                              ),
-                                              SizedBox(
-                                                width: 4,
-                                              ),
-                                              Text(provider
-                                                  .itemLists[index].likes),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                    fit: BoxFit.cover,
                                   ),
                                 ),
-                              ],
-                            ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              SizedBox(
+                                width: 10,
+                              ),
+                              Expanded(
+                                child: Container(
+                                  height: 110,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        snapshot.data.docs[index]
+                                            .data()['title'],
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                      Text(
+                                        provider.itemLists[index].place,
+                                        style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.grey.shade500),
+                                      ),
+                                      SizedBox(
+                                        height: 6,
+                                      ),
+                                      Text(
+                                        '${NumberFormat('###,###,### 원').format(int.parse(snapshot.data.docs[index].data()['price']))}',
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700),
+                                      ),
+                                      Text(
+                                          '${DateFormat('yyyy.MM.dd').format(DateTime.now())}'),
+                                      Expanded(
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            SvgPicture.asset(
+                                              'assets/svg/heart_off.svg',
+                                              width: 14,
+                                            ),
+                                            SizedBox(
+                                              width: 4,
+                                            ),
+                                            Text(provider
+                                                .itemLists[index].likes),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        );
-                      },
-                      itemCount: snapshot.data.docs.length,
-                      separatorBuilder: (BuildContext context, int index) {
-                        return Container(
-                          margin: EdgeInsets.symmetric(vertical: 12),
-                          height: 1,
-                          color: Color(0xFFEAECEB),
-                        );
-                      },
-                    );
-                  } else {
-                    return Container();
-                  }
-                }),
-          ),
+                        ),
+                      );
+                    },
+                    itemCount: snapshot.data.docs.length,
+                    separatorBuilder: (BuildContext context, int index) {
+                      return Container(
+                        margin: EdgeInsets.symmetric(vertical: 12),
+                        height: 1,
+                        color: Color(0xFFEAECEB),
+                      );
+                    },
+                  );
+                } else {
+                  return Container(
+                    child: Center(
+                      child: Text('해당지역에 상품이 없습니다'),
+                    ),
+                  );
+                }
+              }),
         ),
       ),
     );

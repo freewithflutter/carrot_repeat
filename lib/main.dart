@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Carrot Repeat',
-        home: Exam(),
+        home: App(),
         theme: ThemeData(
           primaryColor: Colors.white,
         ),
