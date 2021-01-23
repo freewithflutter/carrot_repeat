@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
         routes: {
           ItemDetail.id: (context) => ItemDetail(),
           AddItem.id: (context) => AddItem(),
-          ExamDetail.id: (context) => ExamDetail(),
+          // ExamDetail.id: (context) => ExamDetail(),
         },
       ),
     );

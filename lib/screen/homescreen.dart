@@ -129,15 +129,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Row(
                             children: [
                               ClipRRect(
-                                child: Hero(
-                                  tag:
-                                      snapshot.data.docs[index].data()['image'],
-                                  child: Image.network(
-                                    snapshot.data.docs[index].data()['image'],
-                                    width: 110,
-                                    height: 110,
-                                    fit: BoxFit.cover,
-                                  ),
+                                child: Image.network(
+                                  snapshot.data.docs[index].data()['image'] ??
+                                      '',
+                                  width: 110,
+                                  height: 110,
+                                  fit: BoxFit.cover,
                                 ),
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -176,7 +173,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                             fontWeight: FontWeight.w700),
                                       ),
                                       Text(
-                                          '${DateFormat('yyyy.MM.dd').format(DateTime.now())}'),
+                                          '${DateFormat('yyyy.MM.dd').format(DateTime.now())}' ??
+                                              ''),
                                       Expanded(
                                         child: Row(
                                           crossAxisAlignment:
