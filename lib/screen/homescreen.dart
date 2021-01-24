@@ -1,3 +1,4 @@
+import 'package:carrot_repeat/components/temparature.dart';
 import 'package:carrot_repeat/provider/item_provider.dart';
 import 'package:carrot_repeat/screen/additem/additem_screen.dart';
 import 'package:carrot_repeat/screen/item_detail/item_detail_screen.dart';
@@ -10,18 +11,50 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+// class A {
+//   Future<int> getInt() {
+//     return FirebaseFirestore.instance.collection('Items').snapshots().length;
+//   }
+// }
+//
+// class B {
+//   checkValue() async {
+//     final val = await A().getInt();
+//   }
+// }
+
 class HomeScreen extends StatefulWidget {
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String selectedPlace = "수유동";
+  final _firestore = FirebaseFirestore.instance;
+  Future<int> getInt() {
+    return FirebaseFirestore.instance.collection('Items').snapshots().length;
+  }
 
+  Stream<int> hi = FirebaseFirestore.instance
+      .collection('Items')
+      .snapshots()
+      .length
+      .asStream();
+
+  checkValue() async {
+    int val = await getInt();
+  }
+
+  getCount() {
+    return FirebaseFirestore.instance.collection('Items').snapshots().length;
+  }
+
+  String selectedPlace = "수유동";
+  final storeLength =
+      FirebaseFirestore.instance.collection('Items').snapshots().length;
   @override
   void initState() {
-    final store = FirebaseFirestore.instance;
-    print(store.collection('Items').doc('title'));
+    // print(store.collection('Items').doc('title'));
+    print(storeLength);
     super.initState();
   }
 
@@ -30,7 +63,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return AppBar(
       elevation: 1,
       title: GestureDetector(
-        onTap: () {},
+        onTap: () {
+          setState(() {});
+        },
         child: PopupMenuButton<String>(
           shape: ShapeBorder.lerp(
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -63,10 +98,22 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       actions: [
         IconButton(
-            icon: Icon(Icons.search, color: Colors.black), onPressed: null),
+            icon: Icon(Icons.search, color: Colors.black),
+            onPressed: () async {
+              print(selectedPlace);
+              final data = await FirebaseFirestore.instance
+                  .collection('Items')
+                  .where('place', isEqualTo: selectedPlace)
+                  .get();
+              print(data.docs.length);
+            }),
         IconButton(
             icon: Icon(Icons.tune, color: Colors.black), onPressed: null),
         IconButton(
+          onPressed: () async {
+            int val = await getInt();
+            print(val);
+          },
           icon: SvgPicture.asset(
             'assets/svg/bell.svg',
             width: 22,
@@ -115,110 +162,109 @@ class _HomeScreenState extends State<HomeScreen> {
                   .collection('Items')
                   .where('place', isEqualTo: selectedPlace)
                   .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return ListView.separated(
-                    padding: EdgeInsets.fromLTRB(15, 25, 15, 20),
-                    itemBuilder: (BuildContext context, int index) {
-                      return GestureDetector(
-                        onTap: () {
-                          provider.selectedId = snapshot.data.docs[index].id;
-                          Navigator.pushNamed(context, ItemDetail.id);
-                        },
-                        child: Container(
-                          child: Row(
-                            children: [
-                              ClipRRect(
-                                child: Image.network(
-                                  snapshot.data.docs[index].data()['image'] ??
-                                      '',
-                                  width: 110,
-                                  height: 110,
-                                  fit: BoxFit.cover,
-                                ),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              SizedBox(
-                                width: 10,
-                              ),
-                              Expanded(
-                                child: Container(
-                                  height: 110,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        snapshot.data.docs[index]
-                                            .data()['title'],
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                            fontSize: 17,
-                                            fontWeight: FontWeight.w500),
-                                      ),
-                                      Text(
-                                        provider.itemLists[index].place,
-                                        style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.grey.shade500),
-                                      ),
-                                      SizedBox(
-                                        height: 6,
-                                      ),
-                                      Text(
-                                        '${NumberFormat('###,###,### 원').format(int.parse(snapshot.data.docs[index].data()['price']))}',
-                                        style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w700),
-                                      ),
-                                      Text(
-                                          '${DateFormat('yyyy.MM.dd').format(DateTime.now())}' ??
-                                              ''),
-                                      Expanded(
-                                        child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.end,
-                                          children: [
-                                            SvgPicture.asset(
-                                              'assets/svg/heart_off.svg',
-                                              width: 14,
-                                            ),
-                                            SizedBox(
-                                              width: 4,
-                                            ),
-                                            Text(provider
-                                                .itemLists[index].likes),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                    itemCount: snapshot.data.docs.length,
-                    separatorBuilder: (BuildContext context, int index) {
-                      return Container(
-                        margin: EdgeInsets.symmetric(vertical: 12),
-                        height: 1,
-                        color: Color(0xFFEAECEB),
-                      );
-                    },
-                  );
-                } else {
-                  return Container(
-                    child: Center(
-                      child: Text('해당지역에 상품이 없습니다'),
-                    ),
-                  );
+              builder: (context, itemRe) {
+                if (itemRe.hasError) {
+                  return Text('Error');
                 }
+                if (itemRe.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                }
+                return ListView.builder(
+                  padding: EdgeInsets.fromLTRB(15, 25, 15, 20),
+                  shrinkWrap: true,
+                  itemBuilder: (BuildContext context, int index) {
+                    return GestureDetector(
+                      onTap: () {
+                        provider.selectedId = itemRe.data.docs[index].id;
+                        Navigator.pushNamed(context, ItemDetail.id);
+                      },
+                      child: Container(
+                        child: Row(
+                          children: [
+                            ClipRRect(
+                              child: Image.network(
+                                itemRe.data?.docs[index].data()['image'] ?? '',
+                                width: 110,
+                                height: 110,
+                                fit: BoxFit.cover,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Expanded(
+                              child: Container(
+                                height: 110,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      itemRe.data?.docs[index]
+                                              .data()['title'] ??
+                                          '',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                    Text(
+                                      itemRe.data.docs[index].data()['place'],
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.grey.shade500),
+                                    ),
+                                    SizedBox(
+                                      height: 6,
+                                    ),
+                                    // Text(
+                                    //   '${NumberFormat('###,###,### 원').format(int.parse(snapshot.data?.docs[index].data()['price'] ?? ''))}',
+                                    //   style: TextStyle(
+                                    //       fontSize: 16,
+                                    //       fontWeight: FontWeight.w700),
+                                    // ),
+                                    Text(
+                                        '${DateFormat('yyyy.MM.dd').format(DateTime.now())}' ??
+                                            ''),
+                                    Expanded(
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          SvgPicture.asset(
+                                            'assets/svg/heart_off.svg',
+                                            width: 14,
+                                          ),
+                                          SizedBox(
+                                            width: 4,
+                                          ),
+                                          Text(itemRe.data.docs[index]
+                                              .data()['likes']),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                  itemCount: itemRe.data.docs.length,
+
+                  // separatorBuilder: (BuildContext context, int index) {
+                  //   return Container(
+                  //     margin: EdgeInsets.symmetric(vertical: 12),
+                  //     height: 1,
+                  //     color: Color(0xFFEAECEB),
+                  //   );
+                  // },
+                );
               }),
         ),
       ),
