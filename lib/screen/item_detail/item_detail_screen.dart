@@ -80,7 +80,7 @@ class _ItemDetailState extends State<ItemDetail> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            snapshot.data.data()['price'],
+                            '${snapshot.data.data()['price']}원',
                             style: TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.w700),
                           ),
@@ -179,7 +179,7 @@ class _ItemDetailState extends State<ItemDetail> {
                                     MainAxisAlignment.spaceEvenly,
                                 children: [
                                   Text(
-                                    snapshot.data.data()['sellerId'],
+                                    snapshot.data.data()['sellerId'] ?? '이해주',
                                     style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w700),
@@ -194,7 +194,8 @@ class _ItemDetailState extends State<ItemDetail> {
                             ],
                           ),
                           ManorTemperature(
-                              manorTemp: snapshot.data.data()['temperature']),
+                              manorTemp:
+                                  snapshot.data.data()['temperature'] ?? 32),
                         ],
                       ),
                     ),
@@ -206,7 +207,7 @@ class _ItemDetailState extends State<ItemDetail> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            snapshot.data.data()['title'],
+                            snapshot.data.data()['title'] ?? '제목이 없습니',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w700,

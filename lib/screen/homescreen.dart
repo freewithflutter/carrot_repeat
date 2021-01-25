@@ -11,18 +11,6 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-// class A {
-//   Future<int> getInt() {
-//     return FirebaseFirestore.instance.collection('Items').snapshots().length;
-//   }
-// }
-//
-// class B {
-//   checkValue() async {
-//     final val = await A().getInt();
-//   }
-// }
-
 class HomeScreen extends StatefulWidget {
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -31,20 +19,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final _firestore = FirebaseFirestore.instance;
   Future<int> getInt() {
-    return FirebaseFirestore.instance.collection('Items').snapshots().length;
-  }
-
-  Stream<int> hi = FirebaseFirestore.instance
-      .collection('Items')
-      .snapshots()
-      .length
-      .asStream();
-
-  checkValue() async {
-    int val = await getInt();
-  }
-
-  getCount() {
     return FirebaseFirestore.instance.collection('Items').snapshots().length;
   }
 
@@ -162,20 +136,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   .collection('Items')
                   .where('place', isEqualTo: selectedPlace)
                   .snapshots(),
-              builder: (context, itemRe) {
-                if (itemRe.hasError) {
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
                   return Text('Error');
                 }
-                if (itemRe.connectionState == ConnectionState.waiting) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
                   return CircularProgressIndicator();
                 }
-                return ListView.builder(
+                return ListView.separated(
                   padding: EdgeInsets.fromLTRB(15, 25, 15, 20),
                   shrinkWrap: true,
                   itemBuilder: (BuildContext context, int index) {
                     return GestureDetector(
                       onTap: () {
-                        provider.selectedId = itemRe.data.docs[index].id;
+                        provider.selectedId = snapshot.data.docs[index].id;
                         Navigator.pushNamed(context, ItemDetail.id);
                       },
                       child: Container(
@@ -183,7 +157,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             ClipRRect(
                               child: Image.network(
-                                itemRe.data?.docs[index].data()['image'] ?? '',
+                                snapshot.data?.docs[index].data()['image'] ??
+                                    '',
                                 width: 110,
                                 height: 110,
                                 fit: BoxFit.cover,
@@ -200,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      itemRe.data?.docs[index]
+                                      snapshot.data?.docs[index]
                                               .data()['title'] ??
                                           '',
                                       overflow: TextOverflow.ellipsis,
@@ -209,7 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           fontWeight: FontWeight.w500),
                                     ),
                                     Text(
-                                      itemRe.data.docs[index].data()['place'],
+                                      snapshot.data.docs[index].data()['place'],
                                       style: TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.w500,
@@ -217,6 +192,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                     SizedBox(
                                       height: 6,
+                                    ),
+                                    Text(
+                                      '${NumberFormat('###,###,### 원').format(int.parse(snapshot.data?.docs[index].data()['price'] ?? ''))}',
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700),
                                     ),
                                     // Text(
                                     //   '${NumberFormat('###,###,### 원').format(int.parse(snapshot.data?.docs[index].data()['price'] ?? ''))}',
@@ -241,8 +222,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                           SizedBox(
                                             width: 4,
                                           ),
-                                          Text(itemRe.data.docs[index]
-                                              .data()['likes']),
+                                          Text(snapshot.data.docs[index]
+                                                  .data()['likes'] ??
+                                              '0'),
                                         ],
                                       ),
                                     ),
@@ -255,15 +237,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     );
                   },
-                  itemCount: itemRe.data.docs.length,
-
-                  // separatorBuilder: (BuildContext context, int index) {
-                  //   return Container(
-                  //     margin: EdgeInsets.symmetric(vertical: 12),
-                  //     height: 1,
-                  //     color: Color(0xFFEAECEB),
-                  //   );
-                  // },
+                  itemCount: snapshot.data.docs.length,
+                  separatorBuilder: (BuildContext context, int index) {
+                    return Container(
+                      margin: EdgeInsets.symmetric(vertical: 12),
+                      height: 1,
+                      color: Color(0xFFEAECEB),
+                    );
+                  },
                 );
               }),
         ),
