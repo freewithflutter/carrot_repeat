@@ -17,16 +17,23 @@ class ItemDetail extends StatefulWidget {
 }
 
 class _ItemDetailState extends State<ItemDetail> {
+  final _firestore = FirebaseFirestore.instance;
+  final _auth = FirebaseAuth.instance;
   final _store = FirebaseFirestore.instance.collection('Items');
+  final scaffoldKey = GlobalKey<ScaffoldState>();
   Map likedNow;
   bool _isLiked = false;
   bool _selectedHeart;
   Map<String, dynamic> data;
-  final scaffoldKey = GlobalKey<ScaffoldState>();
   final user = FirebaseAuth.instance.currentUser;
 
   @override
   void initState() {
+    // Future.delayed(Duration.zero, () async {
+    //   await _firestore.collection('user').doc(_auth.currentUser.uid).set({
+    //     "likes": [],
+    //   });
+    // });
     super.initState();
   }
 
@@ -49,30 +56,30 @@ class _ItemDetailState extends State<ItemDetail> {
     // }
     //
     // hi();
-
+    // Likes onoff method
     handleLikes() {
-      if (_isLiked) {
-        _store.doc(provider.selectedId).update({
-          'likedNow.$currentUser': false,
-        });
-        setState(() {
-          _isLiked = false;
-          _store.doc(provider.selectedId).update({
-            'likedNow.$currentUser': false,
-          });
-        });
-      } else if (!_isLiked) {
-        _store.doc(provider.selectedId).update({
-          'likedNow.$currentUser': true,
-        });
-        setState(() {
-          _isLiked = true;
-          _store.doc(provider.selectedId).update({
-            'likedNow.$currentUser': true,
-          });
-        });
-      }
-    }
+    //   if (_isLiked) {
+    //     _store.doc(provider.selectedId).update({
+    //       'likedNow.$currentUser': false,
+    //     });
+    //     setState(() {
+    //       _isLiked = false;
+    //       _store.doc(provider.selectedId).update({
+    //         'likedNow.$currentUser': false,
+    //       });
+    //     });
+    //   } else if (!_isLiked) {
+    //     _store.doc(provider.selectedId).update({
+    //       'likedNow.$currentUser': true,
+    //     });
+    //     setState(() {
+    //       _isLiked = true;
+    //       _store.doc(provider.selectedId).update({
+    //         'likedNow.$currentUser': true,
+    //       });
+    //     });
+    //   }
+    // }
 
     return Scaffold(
       key: scaffoldKey,
@@ -93,7 +100,7 @@ class _ItemDetailState extends State<ItemDetail> {
               icon: Icon(Icons.share),
               onPressed: () {
                 FirebaseFirestore.instance
-                    .collection('Itmes')
+                    .collection('Items')
                     .doc(provider.selectedId)
                     .get()
                     .then((DocumentSnapshot ds) {
@@ -130,28 +137,51 @@ class _ItemDetailState extends State<ItemDetail> {
                 children: [
                   Row(
                     children: [
-                      GestureDetector(
-                        onTap: () {
-                          // _isLiked = provider.likedAbout == true;
-
-                          // setState(() {
-                          //   _selectedHeart = !_selectedHeart;
-                          // });
-
-                          handleLikes();
-
-                          Scaffold.of(context).showSnackBar(SnackBar(
-                            content: Text(_selectedHeart
-                                ? '관심목록에 추가 되었습니다'
-                                : '관심목록에서 삭제 되었습니다'),
-                            duration: Duration(seconds: 1),
-                          ));
-                        },
-                        child: Icon(
-                            _isLiked ? Icons.favorite : Icons.favorite_border,
-                            size: 20,
-                            color: kMainColor),
-                      ),
+                      StreamBuilder(
+                          stream: _firestore
+                              .collection('user')
+                              .doc(_auth.currentUser.uid)
+                              .snapshots(),
+                          builder: (context, userSnapshot) {
+                            if (userSnapshot.hasError) {
+                              return Text('Error');
+                            }
+                            if (userSnapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return CircularProgressIndicator();
+                            }
+                            return IconButton(
+                              onPressed: () async {
+                                if (userSnapshot.data
+                                    .data()['likes']
+                                    .contains(provider.selectedId)) {
+                                  await _firestore
+                                      .collection('user')
+                                      .doc(_auth.currentUser.uid)
+                                      .update({
+                                    "likes": FieldValue.arrayRemove(
+                                        [provider.selectedId])
+                                  });
+                                } else {
+                                  await _firestore
+                                      .collection('user')
+                                      .doc(_auth.currentUser.uid)
+                                      .update({
+                                    "likes": FieldValue.arrayUnion(
+                                        [provider.selectedId])
+                                  });
+                                }
+                              },
+                              icon: Icon(
+                                  userSnapshot.data
+                                          .data()['likes']
+                                          .contains(provider.selectedId)
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  size: 26,
+                                  color: kMainColor),
+                            );
+                          }),
                       Container(
                         margin:
                             EdgeInsets.symmetric(horizontal: 16, vertical: 18),
