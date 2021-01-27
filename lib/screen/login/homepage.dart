@@ -1,4 +1,6 @@
 import 'package:carrot_repeat/provider/google_sign_in_provider.dart';
+import 'package:carrot_repeat/screen/app.dart';
+import 'package:carrot_repeat/screen/homescreen.dart';
 import 'package:carrot_repeat/screen/login/login_screeen.dart';
 import 'package:carrot_repeat/screen/login/logindata.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -21,7 +23,7 @@ class _HomePageState extends State<HomePage> {
           if (googleprovider.isSigningIn) {
             return Indicator();
           } else if (snapshot.hasData) {
-            return LoginData();
+            return App();
           } else {
             return LoginScreen();
           }

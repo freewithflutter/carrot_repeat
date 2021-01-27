@@ -1,8 +1,10 @@
 import 'package:carrot_repeat/components/temparature.dart';
+import 'package:carrot_repeat/provider/google_sign_in_provider.dart';
 import 'package:carrot_repeat/provider/item_provider.dart';
 import 'package:carrot_repeat/screen/additem/additem_screen.dart';
 import 'package:carrot_repeat/screen/item_detail/item_detail_screen.dart';
 import 'package:carrot_repeat/util/default.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -18,10 +20,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _firestore = FirebaseFirestore.instance;
+  final user = FirebaseAuth.instance.currentUser;
+  bool isLiked;
   Future<int> getInt() {
     return FirebaseFirestore.instance.collection('Items').snapshots().length;
   }
 
+  bool _isLiked;
   String selectedPlace = "수유동";
   final storeLength =
       FirebaseFirestore.instance.collection('Items').snapshots().length;
@@ -50,7 +55,6 @@ class _HomeScreenState extends State<HomeScreen> {
           onSelected: (value) {
             setState(() {
               selectedPlace = value;
-              print(selectedPlace);
             });
           },
           itemBuilder: (BuildContext context) {
@@ -98,7 +102,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget build(BuildContext context) {
+    final loginProvider =
+        Provider.of<GoogleSignInProvider>(context, listen: false);
     final provider = Provider.of<ItemProvider>(context, listen: false);
+    final currentUserId = user.uid;
+
     return Scaffold(
       appBar: appBarWidget(),
       body: HawkFabMenu(
@@ -109,6 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
           HawkFabMenuItem(
             label: '동네홍보',
             ontap: () {
+              loginProvider.logout();
               Scaffold.of(context)..hideCurrentSnackBar();
               Scaffold.of(context).showSnackBar(
                 SnackBar(content: Text('ui가 없습니')),
@@ -150,7 +159,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     return GestureDetector(
                       onTap: () {
                         provider.selectedId = snapshot.data.docs[index].id;
-                        Navigator.pushNamed(context, ItemDetail.id);
+                        FirebaseFirestore.instance
+                            .collection('Items')
+                            .doc(provider.selectedId)
+                            .get()
+                            .then((DocumentSnapshot ds) {
+                          _isLiked = ds.data()['likedNow'] == false;
+                          provider.likedAbout = _isLiked;
+                        });
+
+                        // Navigator.pushNamed(context, ItemDetail.id);
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ItemDetail()));
                       },
                       child: Container(
                         child: Row(

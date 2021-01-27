@@ -1,316 +1,348 @@
-// import 'dart:io';
-// import 'dart:math';
-//
+// import 'package:carrot_repeat/components/temparature.dart';
+// import 'package:carrot_repeat/provider/item_provider.dart';
 // import 'package:carrot_repeat/util/default.dart';
 // import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:firebase_storage/firebase_storage.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:flutter/material.dart';
-// import 'package:image_picker/image_picker.dart';
-// import 'package:permission_handler/permission_handler.dart';
+// import 'package:flutter_swiper/flutter_swiper.dart';
+// import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+// import 'package:provider/provider.dart';
+// import 'package:carousel_slider/carousel_slider.dart';
 //
-// // ignore: must_be_immutable
-// class AddItem extends StatefulWidget {
-//   static final String id = 'addItem';
-//   String _error = 'No Error Dectected';
+// class ItemDetail extends StatefulWidget {
+//   static final String id = 'itemdetail';
+//
 //   @override
-//   _AddItemState createState() => _AddItemState();
+//   _ItemDetailState createState() => _ItemDetailState();
 // }
 //
-// class _AddItemState extends State<AddItem> {
-//   File _carrotImage;
-//   var _pickCarrot = ImagePicker();
-//   Future<void> selectImage() async {
-//     final aim = await ImagePicker.pickImage(source: ImageSource.gallery);
-//     setState(() {
-//       _carrotImage = aim;
-//     });
-//   }
+// class _ItemDetailState extends State<ItemDetail> {
+//   final _store = FirebaseFirestore.instance.collection('Items');
+//   Map likedNow;
+//   bool _isLiked;
+//   bool _selectedHeart;
+//   Map<String, dynamic> data;
+//   final scaffoldKey = GlobalKey<ScaffoldState>();
+//   final user = FirebaseAuth.instance.currentUser;
 //
-//   String imageUrl;
-//   TextEditingController aboutItem = TextEditingController();
-//   TextEditingController title = TextEditingController();
-//   TextEditingController price = TextEditingController();
-//   TextEditingController place = TextEditingController();
-//   TextEditingController image = TextEditingController();
+//   @override
+//   void initState() {
+//     super.initState();
+//   }
 //
 //   @override
 //   Widget build(BuildContext context) {
+//     final String currentUser = user.uid;
+//     final provider = Provider.of<ItemProvider>(context, listen: false);
+//     final fire = FirebaseFirestore.instance;
+//     FirebaseFirestore.instance
+//         .collection('Items')
+//         .doc(provider.selectedId)
+//         .get()
+//         .then((DocumentSnapshot ds) {
+//       _isLiked = ds.data()['likedNow'] == false;
+//     });
+//
 //     return Scaffold(
-//       backgroundColor: Colors.white,
-//       appBar: PreferredSize(
-//         preferredSize: Size.fromHeight(44.0),
-//         child: AppBar(
-//           backgroundColor: Colors.white,
-//           elevation: 1,
-//           centerTitle: true,
-//           leading: GestureDetector(
+//       key: scaffoldKey,
+//       extendBodyBehindAppBar: true,
+//       appBar: AppBar(
+//         leading: GestureDetector(
 //             onTap: () {
 //               Navigator.pop(context);
 //             },
-//             child: Container(
-//               margin: EdgeInsets.only(top: 14, left: 17),
-//               child: Text(
-//                 '닫기',
-//                 style: TextStyle(fontSize: 16, color: kBlackColor),
-//               ),
-//             ),
-//           ),
-//           title: Text(
-//             '중고거래 글쓰기',
-//             style: TextStyle(
-//                 color: kBlackColor, fontSize: 18, fontWeight: FontWeight.w800),
-//           ),
-//           actions: [
-//             GestureDetector(
-//               onTap: () {
-//                 Map<String, dynamic> data = {
-//                   'title': title.text,
-//                   'aboutItem': aboutItem.text,
-//                   'price': price.text,
-//                   'place': place.text,
-//                   'image': imageUrl.toString(),
-//                 };
-//                 uploadImage();
-//                 FirebaseFirestore.instance.collection('Items').add(data);
-//                 Navigator.pop(context);
-//               },
-//               child: Container(
-//                 margin: EdgeInsets.only(top: 14, right: 17),
-//                 child: Text(
-//                   '완료',
-//                   style: TextStyle(fontSize: 16, color: kBlackColor),
+//             child: Icon(Icons.arrow_back)),
+//         iconTheme: IconThemeData(
+//           color: Colors.white,
+//         ),
+//         backgroundColor: Colors.transparent,
+//         elevation: 0.0,
+//         actions: [
+//           IconButton(icon: Icon(Icons.share), onPressed: () {}),
+//           IconButton(icon: Icon(Icons.more_vert), onPressed: () {}),
+//           // height: MediaQuery.of(context).size.height * 0.562,
+//         ],
+//       ),
+//       bottomNavigationBar: StreamBuilder(
+//           stream: FirebaseFirestore.instance
+//               .collection('Items')
+//               .doc(provider.selectedId)
+//               .snapshots(),
+//           builder: (context, snapshot) {
+//             return Container(
+//               margin: EdgeInsets.symmetric(horizontal: 18),
+//               width: double.infinity,
+//               alignment: Alignment.center,
+//               height: 75,
+//               decoration: BoxDecoration(
+//                 color: Colors.white,
+//                 border: Border(
+//                   top: BorderSide(
+//                     width: 1,
+//                     color: Color(0xFFF0F0F0),
+//                   ),
 //                 ),
 //               ),
-//             ),
-//           ],
-//           iconTheme: IconThemeData(
-//             color: kBlackColor,
-//           ),
-//         ),
-//       ),
-//       bottomNavigationBar: Container(
-//         padding: EdgeInsets.symmetric(horizontal: 15),
-//         height: 50,
-//         decoration: BoxDecoration(
-//             border: Border(
-//                 top: BorderSide(
-//                   width: 1,
-//                   color: kSeperateLineColor,
-//                 ))),
-//         child: Row(
-//           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//           children: [
-//             Row(
-//               children: [
-//                 Text('게시글 보여줄 동네 고르기'),
-//                 Icon(Icons.keyboard_arrow_down)
-//               ],
-//             ),
-//             GestureDetector(
-//                 onTap: () {
-//                   print(imageUrl);
-//                 },
-//                 child: Icon(Icons.sticky_note_2_outlined))
-//           ],
-//         ),
-//       ),
+//               child: Row(
+//                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                 children: [
+//                   Row(
+//                     children: [
+//                       GestureDetector(
+//                         onTap: () {
+//                           if (_isLiked) {
+//                             _store.doc(provider.selectedId).update({
+//                               'likedNow.$currentUser': false,
+//                             });
+//                             setState(() {
+//                               _isLiked = false;
+//                               _store.doc(provider.selectedId).update({
+//                                 'likedNow.$currentUser': false,
+//                               });
+//                             });
+//                           } else if (!_isLiked) {
+//                             _store.doc(provider.selectedId).update({
+//                               'likedNow.$currentUser': true,
+//                             });
+//                             setState(() {
+//                               _isLiked = true;
+//                               _store.doc(provider.selectedId).update({
+//                                 'likedNow.$currentUser': true,
+//                               });
+//                             });
+//                           }
+//                           print(snapshot.data.data()['likedNow']);
+//                           // setState(() {
+//                           //   _selectedHeart = !_selectedHeart;
+//                           // });
+//
+//                           FirebaseFirestore.instance
+//                               .collection('Items')
+//                               .doc(provider.selectedId)
+//                               .update(data);
+//
+//                           Scaffold.of(context).showSnackBar(SnackBar(
+//                             content: Text(_selectedHeart
+//                                 ? '관심목록에 추가 되었습니다'
+//                                 : '관심목록에서 삭제 되었습니다'),
+//                             duration: Duration(seconds: 1),
+//                           ));
+//                         },
+//                         child: Icon(
+//                             _isLiked ? Icons.favorite : Icons.favorite_border,
+//                             size: 20,
+//                             color: kMainColor),
+//                       ),
+//                       Container(
+//                         margin:
+//                         EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+//                         color: Colors.grey.shade300,
+//                         height: double.infinity,
+//                         width: 1,
+//                       ),
+//                       Column(
+//                         mainAxisAlignment: MainAxisAlignment.center,
+//                         children: [
+//                           Text(
+//                             '${snapshot.data.data()['price']}원',
+//                             style: TextStyle(
+//                                 fontSize: 16, fontWeight: FontWeight.w700),
+//                           ),
+//                           SizedBox(height: 4),
+//                           Text(
+//                             '가격제안불가',
+//                             style: TextStyle(
+//                               color: Colors.grey.shade500,
+//                             ),
+//                           ),
+//                         ],
+//                       ),
+//                     ],
+//                   ),
+//                   Container(
+//                     margin: EdgeInsets.symmetric(vertical: 16),
+//                     width: 138,
+//                     decoration: BoxDecoration(
+//                       color: kMainColor,
+//                       borderRadius: BorderRadius.circular(5),
+//                     ),
+//                     child: GestureDetector(
+//                       onTap: () {
+//                         FirebaseFirestore.instance
+//                             .collection('Items')
+//                             .doc(provider.selectedId)
+//                             .get()
+//                             .then((DocumentSnapshot ds) {
+//                           _isLiked = ds.data()['likedNow'] == false;
+//                           print(_isLiked);
+//                         });
+//                         print(_isLiked);
+//                       },
+//                       child: Center(
+//                         child: Text(
+//                           '채팅으로 거래하기',
+//                           style: TextStyle(
+//                               fontSize: 15,
+//                               fontWeight: FontWeight.w800,
+//                               color: Colors.white),
+//                         ),
+//                       ),
+//                     ),
+//                   ),
+//                 ],
+//               ),
+//             );
+//           }),
 //       body: SingleChildScrollView(
-//         child: Container(
-//           padding: EdgeInsets.symmetric(horizontal: 20),
-//           width: double.infinity,
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               GestureDetector(
-//                 //TODO upload image
-//                 onTap: () {
-//                   // uploadImage();
-//                   selectImage();
-//                 },
-//                 child: Row(
+//         child: StreamBuilder<DocumentSnapshot>(
+//             stream: FirebaseFirestore.instance
+//                 .collection('Items')
+//                 .doc(provider.selectedId)
+//                 .snapshots(),
+//             builder: (context, snapshot) {
+//               return Container(
+//                 width: double.infinity,
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
 //                   children: [
 //                     Container(
-//                       margin: EdgeInsets.only(top: 30),
-//                       width: 64,
-//                       height: 64,
+//                       width: double.infinity,
+//                       height: MediaQuery.of(context).size.height * 0.562,
+//                       child: new Swiper(
+//                         itemBuilder: (BuildContext context, int index) {
+//                           return Container(
+//                             child: Image.network(
+//                               snapshot.data.data()['image'],
+//                               fit: BoxFit.cover,
+//                             ),
+//                           );
+//                         },
+//                         itemCount: 6,
+//                         viewportFraction: 1,
+//                         scale: 1,
+//                         pagination: SwiperPagination(
+//                           builder: DotSwiperPaginationBuilder(
+//                               activeColor: kMainColor),
+//                         ),
+//                       ),
+//                     ),
+//                     //TODO section 2 seller profile
+//                     Container(
 //                       decoration: BoxDecoration(
-//                           border:
-//                           Border.all(width: 1, color: Colors.grey.shade300),
-//                           borderRadius: BorderRadius.circular(4)),
-//                       child: Center(
-//                           child: Icon(
-//                             Icons.camera_alt,
-//                             color: kLightGrayBlueColor,
+//                           border: Border(
+//                             bottom: BorderSide(
+//                               width: 1,
+//                               color: Color(0xFFF0F0F0),
+//                             ),
 //                           )),
+//                       padding: EdgeInsets.only(
+//                           left: 18, right: 18, top: 18, bottom: 10),
+//                       child: Row(
+//                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                         children: [
+//                           Row(
+//                             children: [
+//                               CircleAvatar(
+//                                 maxRadius: 21,
+//                                 backgroundImage:
+//                                 AssetImage('assets/images/user.png'),
+//                               ),
+//                               SizedBox(
+//                                 width: 8,
+//                               ),
+//                               Column(
+//                                 crossAxisAlignment: CrossAxisAlignment.start,
+//                                 mainAxisAlignment:
+//                                 MainAxisAlignment.spaceEvenly,
+//                                 children: [
+//                                   Text(
+//                                     snapshot.data.data()['sellerId'] ??
+//                                         user.displayName,
+//                                     style: TextStyle(
+//                                         fontSize: 16,
+//                                         fontWeight: FontWeight.w700),
+//                                   ),
+//                                   SizedBox(height: 2),
+//                                   Text(
+//                                     snapshot.data.data()['place'],
+//                                     style: TextStyle(fontSize: 12),
+//                                   ),
+//                                 ],
+//                               ),
+//                             ],
+//                           ),
+//                           ManorTemperature(
+//                               manorTemp:
+//                               snapshot.data.data()['temperature'] ?? 32),
+//                         ],
+//                       ),
+//                     ),
+//                     //TODO Section3 about item (상품설명)
+//                     Container(
+//                       padding:
+//                       EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+//                       child: Column(
+//                         crossAxisAlignment: CrossAxisAlignment.start,
+//                         children: [
+//                           Text(
+//                             snapshot.data.data()['title'] ?? '제목이 없습니',
+//                             style: TextStyle(
+//                               fontSize: 20,
+//                               fontWeight: FontWeight.w700,
+//                             ),
+//                           ),
+//                           Container(
+//                             padding: EdgeInsets.symmetric(vertical: 10),
+//                             child: Text(
+//                               '전자제품  3분전',
+//                               style: TextStyle(
+//                                   color: Colors.grey.shade600, fontSize: 12),
+//                             ),
+//                           ),
+//                           Container(
+//                             child: Text(
+//                               snapshot.data.data()['aboutItem'],
+//                               style: TextStyle(fontSize: 16, height: 1.25),
+//                             ),
+//                           )
+//                         ],
+//                       ),
 //                     ),
 //                     SizedBox(
-//                       width: 10,
+//                       height: 30,
 //                     ),
-//                     //TODO Image show here
+//                     //TODO section 4 extra information grid part
 //                     Container(
-//                       margin: EdgeInsets.only(top: 30),
-//                       decoration:
-//                       BoxDecoration(borderRadius: BorderRadius.circular(4)),
-//                       width: 64,
-//                       height: 64,
-//                       child: Container(
-//                         child: _carrotImage == null
-//                             ? Center(
-//                           child: Container(),
-//                         )
-//                             : Image.file(
-//                           _carrotImage,
-//                           fit: BoxFit.cover,
-//                         ),
-//                       ),
-//
-//                       // Image.file(image),
-//
-//                       // Image.network(
-//                       //   imageUrl.toString(),
-//                       //   fit: BoxFit.fill,
-//                       // ),
-//                     ),
+//                         padding: EdgeInsets.only(
+//                             left: 18, right: 18, top: 18, bottom: 10),
+//                         child: Column(
+//                           children: [
+//                             Container(
+//                               alignment: Alignment.centerLeft,
+//                               height: 68,
+//                               width: double.infinity,
+//                               child: Text(
+//                                 '이 게시글 신고하기',
+//                                 style: TextStyle(
+//                                     fontSize: 18, fontWeight: FontWeight.w700),
+//                               ),
+//                               decoration: BoxDecoration(
+//                                   border: Border(
+//                                     top: BorderSide(
+//                                       width: 1,
+//                                       color: Colors.grey.shade300,
+//                                     ),
+//                                     bottom: BorderSide(
+//                                         width: 1, color: Colors.grey.shade300),
+//                                   )),
+//                             ),
+//                           ],
+//                         )),
 //                   ],
 //                 ),
-//               ),
-//               Container(
-//                 margin: EdgeInsets.only(top: 20),
-//                 width: double.infinity,
-//                 height: 1,
-//                 color: kSeperateLineColor,
-//               ),
-//               Container(
-//                 margin: EdgeInsets.symmetric(vertical: 10),
-//                 child: TextFormField(
-//                   controller: title,
-//                   decoration: InputDecoration(
-//                       enabledBorder: UnderlineInputBorder(
-//                         borderSide: BorderSide(color: kSeperateLineColor),
-//                       ),
-//                       focusedBorder: UnderlineInputBorder(
-//                         borderSide: BorderSide(color: kSeperateLineColor),
-//                       ),
-//                       hintText: '글 제목',
-//                       hintStyle:
-//                       TextStyle(fontSize: 18, color: kLightGrayBlueColor)),
-//                 ),
-//               ),
-//               Container(
-//                   width: double.infinity,
-//                   padding: EdgeInsets.symmetric(vertical: 10),
-//                   margin: EdgeInsets.symmetric(vertical: 10),
-//                   decoration: BoxDecoration(
-//                       border: Border(
-//                           bottom:
-//                           BorderSide(width: 1, color: kSeperateLineColor))),
-//                   child: Container(
-//                     padding: EdgeInsets.only(bottom: 4),
-//                     child: Row(
-//                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                       children: [
-//                         Text(
-//                           '카테고리 선택',
-//                           style: TextStyle(fontSize: 18, color: Colors.black87),
-//                         ),
-//                         GestureDetector(
-//                             child: Icon(Icons.keyboard_arrow_right)),
-//                       ],
-//                     ),
-//                   )),
-//               Container(
-//                 margin: EdgeInsets.symmetric(vertical: 10),
-//                 child: TextFormField(
-//                   controller: price,
-//                   decoration: InputDecoration(
-//                       enabledBorder: UnderlineInputBorder(
-//                         borderSide: BorderSide(color: kSeperateLineColor),
-//                       ),
-//                       focusedBorder: UnderlineInputBorder(
-//                         borderSide: BorderSide(color: kSeperateLineColor),
-//                       ),
-//                       hintText: '₩ 가격입력',
-//                       hintStyle:
-//                       TextStyle(fontSize: 18, color: kLightGrayBlueColor)),
-//                 ),
-//               ),
-//               Container(
-//                 margin: EdgeInsets.symmetric(vertical: 10),
-//                 child: TextFormField(
-//                   controller: place,
-//                   decoration: InputDecoration(
-//                       enabledBorder: UnderlineInputBorder(
-//                         borderSide: BorderSide(color: kSeperateLineColor),
-//                       ),
-//                       focusedBorder: UnderlineInputBorder(
-//                         borderSide: BorderSide(color: kSeperateLineColor),
-//                       ),
-//                       hintText: '지역선택',
-//                       hintStyle:
-//                       TextStyle(fontSize: 18, color: kLightGrayBlueColor)),
-//                 ),
-//               ),
-//               Container(
-//                 width: MediaQuery.of(context).size.width,
-//                 margin: EdgeInsets.symmetric(vertical: 10),
-//                 child: TextFormField(
-//                   keyboardType: TextInputType.multiline,
-//                   maxLines: null,
-//                   controller: aboutItem,
-//                   decoration: InputDecoration(
-//                       hintMaxLines: 3,
-//                       contentPadding: new EdgeInsets.only(bottom: 180.0),
-//                       enabledBorder: UnderlineInputBorder(
-//                         borderSide: BorderSide(color: Colors.transparent),
-//                       ),
-//                       focusedBorder: UnderlineInputBorder(
-//                         borderSide: BorderSide(color: Colors.transparent),
-//                       ),
-//                       hintText:
-//                       '수유2동에 올릴 게시글 내용을 작성해주세요(가품 및 판매금지품목은 게시가 제한될 수 있어요)',
-//                       hintStyle: TextStyle(
-//                         fontSize: 18,
-//                         wordSpacing: 1,
-//                         height: 1.2,
-//                         color: kLightGrayBlueColor,
-//                       )),
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
+//               );
+//             }),
 //       ),
 //     );
 //   }
-//
-//   uploadImage() async {
-//     final _storage = FirebaseStorage.instance;
-//     final _picker = ImagePicker();
-//     PickedFile image;
-//
-//     // //Select Image
-//     // image = await _picker.getImage(source: ImageSource.gallery);
-//     var file = File(_carrotImage.path);
-//
-//     if (_carrotImage != null) {
-//       //Upload to Firebase
-//
-//       int randomNumber = Random().nextInt(10000);
-//       String imageLocation = 'item/item${randomNumber}.jpg';
-//
-//       var snapshot = await _storage.ref().child(imageLocation).putFile(file);
-//       var downloadUrl = await snapshot.ref.getDownloadURL();
-//
-//       await FirebaseFirestore.instance
-//           .collection('Items')
-//           .doc()
-//           .set({'images': downloadUrl});
-//
-//       setState(() {
-//         imageUrl = downloadUrl;
-//       });
-//     } else {
-//       print('No Path Received ㅠㅠ');
-//     }
-//   }
-//
+// }

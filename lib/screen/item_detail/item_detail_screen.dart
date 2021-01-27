@@ -2,6 +2,7 @@ import 'package:carrot_repeat/components/temparature.dart';
 import 'package:carrot_repeat/provider/item_provider.dart';
 import 'package:carrot_repeat/util/default.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -16,11 +17,65 @@ class ItemDetail extends StatefulWidget {
 }
 
 class _ItemDetailState extends State<ItemDetail> {
+  final _store = FirebaseFirestore.instance.collection('Items');
+  Map likedNow;
+  bool _isLiked = false;
+  bool _selectedHeart;
+  Map<String, dynamic> data;
+  final scaffoldKey = GlobalKey<ScaffoldState>();
+  final user = FirebaseAuth.instance.currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final fire = FirebaseFirestore.instance;
     final provider = Provider.of<ItemProvider>(context, listen: false);
+    // _isLiked = provider.likedAbout;
+    final String currentUser = user.uid;
+    final fire = FirebaseFirestore.instance;
+    // hi() {
+    //   FirebaseFirestore.instance
+    //       .collection('Items')
+    //       .doc(provider.selectedId)
+    //       .get()
+    //       .then((DocumentSnapshot ds) {
+    //     _isLiked = ds.data()['likedNow'] == true;
+    //     print(_isLiked);
+    //     return _isLiked;
+    //   });
+    // }
+    //
+    // hi();
+
+    handleLikes() {
+      if (_isLiked) {
+        _store.doc(provider.selectedId).update({
+          'likedNow.$currentUser': false,
+        });
+        setState(() {
+          _isLiked = false;
+          _store.doc(provider.selectedId).update({
+            'likedNow.$currentUser': false,
+          });
+        });
+      } else if (!_isLiked) {
+        _store.doc(provider.selectedId).update({
+          'likedNow.$currentUser': true,
+        });
+        setState(() {
+          _isLiked = true;
+          _store.doc(provider.selectedId).update({
+            'likedNow.$currentUser': true,
+          });
+        });
+      }
+    }
+
     return Scaffold(
+      key: scaffoldKey,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         leading: GestureDetector(
@@ -34,7 +89,18 @@ class _ItemDetailState extends State<ItemDetail> {
         backgroundColor: Colors.transparent,
         elevation: 0.0,
         actions: [
-          IconButton(icon: Icon(Icons.share), onPressed: () {}),
+          IconButton(
+              icon: Icon(Icons.share),
+              onPressed: () {
+                FirebaseFirestore.instance
+                    .collection('Itmes')
+                    .doc(provider.selectedId)
+                    .get()
+                    .then((DocumentSnapshot ds) {
+                  _isLiked = ds.data()['likedNow'] == true;
+                });
+                print(_isLiked);
+              }),
           IconButton(icon: Icon(Icons.more_vert), onPressed: () {}),
           // height: MediaQuery.of(context).size.height * 0.562,
         ],
@@ -64,10 +130,27 @@ class _ItemDetailState extends State<ItemDetail> {
                 children: [
                   Row(
                     children: [
-                      Icon(
-                        FontAwesomeIcons.heart,
-                        size: 18,
-                        color: Colors.grey.shade500,
+                      GestureDetector(
+                        onTap: () {
+                          // _isLiked = provider.likedAbout == true;
+
+                          // setState(() {
+                          //   _selectedHeart = !_selectedHeart;
+                          // });
+
+                          handleLikes();
+
+                          Scaffold.of(context).showSnackBar(SnackBar(
+                            content: Text(_selectedHeart
+                                ? '관심목록에 추가 되었습니다'
+                                : '관심목록에서 삭제 되었습니다'),
+                            duration: Duration(seconds: 1),
+                          ));
+                        },
+                        child: Icon(
+                            _isLiked ? Icons.favorite : Icons.favorite_border,
+                            size: 20,
+                            color: kMainColor),
                       ),
                       Container(
                         margin:
@@ -102,13 +185,21 @@ class _ItemDetailState extends State<ItemDetail> {
                       color: kMainColor,
                       borderRadius: BorderRadius.circular(5),
                     ),
-                    child: Center(
-                      child: Text(
-                        '채팅으로 거래하기',
-                        style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white),
+                    child: GestureDetector(
+                      onTap: () {
+                        _isLiked = (likedNow[currentUser] == true);
+                        print(_isLiked);
+                        // _store.doc(provider.selectedId).get({
+                        // });
+                      },
+                      child: Center(
+                        child: Text(
+                          ' 거래하채팅으로기',
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white),
+                        ),
                       ),
                     ),
                   ),
@@ -117,7 +208,7 @@ class _ItemDetailState extends State<ItemDetail> {
             );
           }),
       body: SingleChildScrollView(
-        child: StreamBuilder(
+        child: StreamBuilder<DocumentSnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('Items')
                 .doc(provider.selectedId)
@@ -179,7 +270,8 @@ class _ItemDetailState extends State<ItemDetail> {
                                     MainAxisAlignment.spaceEvenly,
                                 children: [
                                   Text(
-                                    snapshot.data.data()['sellerId'] ?? '이해주',
+                                    snapshot.data.data()['sellerId'] ??
+                                        user.displayName,
                                     style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w700),
