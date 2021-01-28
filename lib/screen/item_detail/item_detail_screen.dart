@@ -43,44 +43,6 @@ class _ItemDetailState extends State<ItemDetail> {
     // _isLiked = provider.likedAbout;
     final String currentUser = user.uid;
     final fire = FirebaseFirestore.instance;
-    // hi() {
-    //   FirebaseFirestore.instance
-    //       .collection('Items')
-    //       .doc(provider.selectedId)
-    //       .get()
-    //       .then((DocumentSnapshot ds) {
-    //     _isLiked = ds.data()['likedNow'] == true;
-    //     print(_isLiked);
-    //     return _isLiked;
-    //   });
-    // }
-    //
-    // hi();
-    // Likes onoff method
-    handleLikes() {
-    //   if (_isLiked) {
-    //     _store.doc(provider.selectedId).update({
-    //       'likedNow.$currentUser': false,
-    //     });
-    //     setState(() {
-    //       _isLiked = false;
-    //       _store.doc(provider.selectedId).update({
-    //         'likedNow.$currentUser': false,
-    //       });
-    //     });
-    //   } else if (!_isLiked) {
-    //     _store.doc(provider.selectedId).update({
-    //       'likedNow.$currentUser': true,
-    //     });
-    //     setState(() {
-    //       _isLiked = true;
-    //       _store.doc(provider.selectedId).update({
-    //         'likedNow.$currentUser': true,
-    //       });
-    //     });
-    //   }
-    // }
-
     return Scaffold(
       key: scaffoldKey,
       extendBodyBehindAppBar: true,

@@ -1,237 +1,392 @@
-// import 'package:cached_network_image/cached_network_image.dart';
+// import 'package:carrot_repeat/components/temparature.dart';
+// import 'package:carrot_repeat/provider/item_provider.dart';
+// import 'package:carrot_repeat/util/default.dart';
 // import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:flutter/material.dart';
-// import 'package:fluttershare/models/user.dart';
-// import 'package:fluttershare/pages/home.dart';
-// import 'package:fluttershare/widgets/custom_image.dart';
-// import 'package:fluttershare/widgets/progress.dart';
+// import 'package:flutter_swiper/flutter_swiper.dart';
+// import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+// import 'package:provider/provider.dart';
+// import 'package:carousel_slider/carousel_slider.dart';
 //
-// class Post extends StatefulWidget {
-//   final String postId;
-//   final String ownerId;
-//   final String username;
-//   final String location;
-//   final String description;
-//   final String mediaUrl;
-//   final dynamic likes;
-//
-//   Post({
-//     this.postId,
-//     this.ownerId,
-//     this.username,
-//     this.location,
-//     this.description,
-//     this.mediaUrl,
-//     this.likes,
-//   });
-//
-//   factory Post.fromDocument(DocumentSnapshot doc) {
-//     return Post(
-//       postId: doc['postId'],
-//       ownerId: doc['ownerId'],
-//       username: doc['username'],
-//       location: doc['location'],
-//       description: doc['description'],
-//       mediaUrl: doc['mediaUrl'],
-//       likes: doc['likes'],
-//     );
-//   }
-//
-//   int getLikeCount(likes) {
-//     // if no likes, return 0
-//     if (likes == null) {
-//       return 0;
-//     }
-//     int count = 0;
-//     // if the key is explicitly set to true, add a like
-//     likes.values.forEach((val) {
-//       if (val == true) {
-//         count += 1;
-//       }
-//     });
-//     return count;
-//   }
+// class ItemDetail extends StatefulWidget {
+//   static final String id = 'itemdetail';
 //
 //   @override
-//   _PostState createState() => _PostState(
-//         postId: this.postId,
-//         ownerId: this.ownerId,
-//         username: this.username,
-//         location: this.location,
-//         description: this.description,
-//         mediaUrl: this.mediaUrl,
-//         likes: this.likes,
-//         likeCount: getLikeCount(this.likes),
-//       );
+//   _ItemDetailState createState() => _ItemDetailState();
 // }
 //
-// class _PostState extends State<Post> {
-//   final String currentUserId = currentUser?.id;
-//   final String postId;
-//   final String ownerId;
-//   final String username;
-//   final String location;
-//   final String description;
-//   final String mediaUrl;
-//   int likeCount;
-//   Map likes;
-//   bool isLiked;
+// class _ItemDetailState extends State<ItemDetail> {
+//   final _firestore = FirebaseFirestore.instance;
+//   final _auth = FirebaseAuth.instance;
+//   final _store = FirebaseFirestore.instance.collection('Items');
+//   final scaffoldKey = GlobalKey<ScaffoldState>();
+//   Map likedNow;
+//   bool _isLiked = false;
+//   bool _selectedHeart;
+//   Map<String, dynamic> data;
+//   final user = FirebaseAuth.instance.currentUser;
 //
-//   _PostState({
-//     this.postId,
-//     this.ownerId,
-//     this.username,
-//     this.location,
-//     this.description,
-//     this.mediaUrl,
-//     this.likes,
-//     this.likeCount,
-//   });
-//
-//   buildPostHeader() {
-//     return FutureBuilder(
-//       future: usersRef.document(ownerId).get(),
-//       builder: (context, snapshot) {
-//         if (!snapshot.hasData) {
-//           return circularProgress();
-//         }
-//         User user = User.fromDocument(snapshot.data);
-//         return ListTile(
-//           leading: CircleAvatar(
-//             backgroundImage: CachedNetworkImageProvider(user.photoUrl),
-//             backgroundColor: Colors.grey,
-//           ),
-//           title: GestureDetector(
-//             onTap: () => print('showing profile'),
-//             child: Text(
-//               user.username,
-//               style: TextStyle(
-//                 color: Colors.black,
-//                 fontWeight: FontWeight.bold,
-//               ),
-//             ),
-//           ),
-//           subtitle: Text(location),
-//           trailing: IconButton(
-//             onPressed: () => print('deleting post'),
-//             icon: Icon(Icons.more_vert),
-//           ),
-//         );
-//       },
-//     );
-//   }
-//
-//   handleLikePost() {
-//     bool _isLiked = likes[currentUserId] == true;
-//
-//     if (_isLiked) {
-//       postsRef
-//           .document(ownerId)
-//           .collection('userPosts')
-//           .document(postId)
-//           .updateData({'likes.$currentUserId': false});
-//       setState(() {
-//         likeCount -= 1;
-//         isLiked = false;
-//         likes[currentUserId] = false;
-//       });
-//     } else if (!_isLiked) {
-//       postsRef
-//           .document(ownerId)
-//           .collection('userPosts')
-//           .document(postId)
-//           .updateData({'likes.$currentUserId': true});
-//       setState(() {
-//         likeCount += 1;
-//         isLiked = true;
-//         likes[currentUserId] = true;
-//       });
-//     }
-//   }
-//
-//   buildPostImage() {
-//     return GestureDetector(
-//       onDoubleTap: handleLikePost,
-//       child: Stack(
-//         alignment: Alignment.center,
-//         children: <Widget>[
-//           cachedNetworkImage(mediaUrl),
-//         ],
-//       ),
-//     );
-//   }
-//
-//   buildPostFooter() {
-//     return Column(
-//       children: <Widget>[
-//         Row(
-//           mainAxisAlignment: MainAxisAlignment.start,
-//           children: <Widget>[
-//             Padding(padding: EdgeInsets.only(top: 40.0, left: 20.0)),
-//             GestureDetector(
-//               onTap: handleLikePost,
-//               child: Icon(
-//                 isLiked ? Icons.favorite : Icons.favorite_border,
-//                 size: 28.0,
-//                 color: Colors.pink,
-//               ),
-//             ),
-//             Padding(padding: EdgeInsets.only(right: 20.0)),
-//             GestureDetector(
-//               onTap: () => print('showing comments'),
-//               child: Icon(
-//                 Icons.chat,
-//                 size: 28.0,
-//                 color: Colors.blue[900],
-//               ),
-//             ),
-//           ],
-//         ),
-//         Row(
-//           children: <Widget>[
-//             Container(
-//               margin: EdgeInsets.only(left: 20.0),
-//               child: Text(
-//                 "$likeCount likes",
-//                 style: TextStyle(
-//                   color: Colors.black,
-//                   fontWeight: FontWeight.bold,
-//                 ),
-//               ),
-//             ),
-//           ],
-//         ),
-//         Row(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: <Widget>[
-//             Container(
-//               margin: EdgeInsets.only(left: 20.0),
-//               child: Text(
-//                 "$username ",
-//                 style: TextStyle(
-//                   color: Colors.black,
-//                   fontWeight: FontWeight.bold,
-//                 ),
-//               ),
-//             ),
-//             Expanded(child: Text(description))
-//           ],
-//         ),
-//       ],
-//     );
+//   @override
+//   void initState() {
+//     // Future.delayed(Duration.zero, () async {
+//     //   await _firestore.collection('user').doc(_auth.currentUser.uid).set({
+//     //     "likes": [],
+//     //   });
+//     // });
+//     super.initState();
 //   }
 //
 //   @override
 //   Widget build(BuildContext context) {
-//     isLiked = (likes[currentUserId] == true);
+//     final provider = Provider.of<ItemProvider>(context, listen: false);
+//     // _isLiked = provider.likedAbout;
+//     final String currentUser = user.uid;
+//     final fire = FirebaseFirestore.instance;
+//     // hi() {
+//     //   FirebaseFirestore.instance
+//     //       .collection('Items')
+//     //       .doc(provider.selectedId)
+//     //       .get()
+//     //       .then((DocumentSnapshot ds) {
+//     //     _isLiked = ds.data()['likedNow'] == true;
+//     //     print(_isLiked);
+//     //     return _isLiked;
+//     //   });
+//     // }
+//     //
+//     // hi();
+//     // Likes onoff method
+//     handleLikes() {
+//       //   if (_isLiked) {
+//       //     _store.doc(provider.selectedId).update({
+//       //       'likedNow.$currentUser': false,
+//       //     });
+//       //     setState(() {
+//       //       _isLiked = false;
+//       //       _store.doc(provider.selectedId).update({
+//       //         'likedNow.$currentUser': false,
+//       //       });
+//       //     });
+//       //   } else if (!_isLiked) {
+//       //     _store.doc(provider.selectedId).update({
+//       //       'likedNow.$currentUser': true,
+//       //     });
+//       //     setState(() {
+//       //       _isLiked = true;
+//       //       _store.doc(provider.selectedId).update({
+//       //         'likedNow.$currentUser': true,
+//       //       });
+//       //     });
+//       //   }
+//       // }
 //
-//     return Column(
-//       mainAxisSize: MainAxisSize.min,
-//       children: <Widget>[
-//         buildPostHeader(),
-//         buildPostImage(),
-//         buildPostFooter()
-//       ],
-//     );
+//       return Scaffold(
+//         key: scaffoldKey,
+//         extendBodyBehindAppBar: true,
+//         appBar: AppBar(
+//           leading: GestureDetector(
+//               onTap: () {
+//                 Navigator.pop(context);
+//               },
+//               child: Icon(Icons.arrow_back)),
+//           iconTheme: IconThemeData(
+//             color: Colors.white,
+//           ),
+//           backgroundColor: Colors.transparent,
+//           elevation: 0.0,
+//           actions: [
+//             IconButton(
+//                 icon: Icon(Icons.share),
+//                 onPressed: () {
+//                   FirebaseFirestore.instance
+//                       .collection('Items')
+//                       .doc(provider.selectedId)
+//                       .get()
+//                       .then((DocumentSnapshot ds) {
+//                     _isLiked = ds.data()['likedNow'] == true;
+//                   });
+//                   print(_isLiked);
+//                 }),
+//             IconButton(icon: Icon(Icons.more_vert), onPressed: () {}),
+//             // height: MediaQuery.of(context).size.height * 0.562,
+//           ],
+//         ),
+//         bottomNavigationBar: StreamBuilder(
+//             stream: FirebaseFirestore.instance
+//                 .collection('Items')
+//                 .doc(provider.selectedId)
+//                 .snapshots(),
+//             builder: (context, snapshot) {
+//               return Container(
+//                 margin: EdgeInsets.symmetric(horizontal: 18),
+//                 width: double.infinity,
+//                 alignment: Alignment.center,
+//                 height: 75,
+//                 decoration: BoxDecoration(
+//                   color: Colors.white,
+//                   border: Border(
+//                     top: BorderSide(
+//                       width: 1,
+//                       color: Color(0xFFF0F0F0),
+//                     ),
+//                   ),
+//                 ),
+//                 child: Row(
+//                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                   children: [
+//                     Row(
+//                       children: [
+//                         StreamBuilder(
+//                             stream: _firestore
+//                                 .collection('user')
+//                                 .doc(_auth.currentUser.uid)
+//                                 .snapshots(),
+//                             builder: (context, userSnapshot) {
+//                               if (userSnapshot.hasError) {
+//                                 return Text('Error');
+//                               }
+//                               if (userSnapshot.connectionState ==
+//                                   ConnectionState.waiting) {
+//                                 return CircularProgressIndicator();
+//                               }
+//                               return IconButton(
+//                                 onPressed: () async {
+//                                   if (userSnapshot.data
+//                                       .data()['likes']
+//                                       .contains(provider.selectedId)) {
+//                                     await _firestore
+//                                         .collection('user')
+//                                         .doc(_auth.currentUser.uid)
+//                                         .update({
+//                                       "likes": FieldValue.arrayRemove(
+//                                           [provider.selectedId])
+//                                     });
+//                                   } else {
+//                                     await _firestore
+//                                         .collection('user')
+//                                         .doc(_auth.currentUser.uid)
+//                                         .update({
+//                                       "likes": FieldValue.arrayUnion(
+//                                           [provider.selectedId])
+//                                     });
+//                                   }
+//                                 },
+//                                 icon: Icon(
+//                                     userSnapshot.data
+//                                         .data()['likes']
+//                                         .contains(provider.selectedId)
+//                                         ? Icons.favorite
+//                                         : Icons.favorite_border,
+//                                     size: 26,
+//                                     color: kMainColor),
+//                               );
+//                             }),
+//                         Container(
+//                           margin:
+//                           EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+//                           color: Colors.grey.shade300,
+//                           height: double.infinity,
+//                           width: 1,
+//                         ),
+//                         Column(
+//                           mainAxisAlignment: MainAxisAlignment.center,
+//                           children: [
+//                             Text(
+//                               '${snapshot.data.data()['price']}원',
+//                               style: TextStyle(
+//                                   fontSize: 16, fontWeight: FontWeight.w700),
+//                             ),
+//                             SizedBox(height: 4),
+//                             Text(
+//                               '가격제안불가',
+//                               style: TextStyle(
+//                                 color: Colors.grey.shade500,
+//                               ),
+//                             ),
+//                           ],
+//                         ),
+//                       ],
+//                     ),
+//                     Container(
+//                       margin: EdgeInsets.symmetric(vertical: 16),
+//                       width: 138,
+//                       decoration: BoxDecoration(
+//                         color: kMainColor,
+//                         borderRadius: BorderRadius.circular(5),
+//                       ),
+//                       child: GestureDetector(
+//                         onTap: () {
+//                           _isLiked = (likedNow[currentUser] == true);
+//                           print(_isLiked);
+//                           // _store.doc(provider.selectedId).get({
+//                           // });
+//                         },
+//                         child: Center(
+//                           child: Text(
+//                             ' 거래하채팅으로기',
+//                             style: TextStyle(
+//                                 fontSize: 15,
+//                                 fontWeight: FontWeight.w800,
+//                                 color: Colors.white),
+//                           ),
+//                         ),
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               );
+//             }),
+//         body: SingleChildScrollView(
+//           child: StreamBuilder<DocumentSnapshot>(
+//               stream: FirebaseFirestore.instance
+//                   .collection('Items')
+//                   .doc(provider.selectedId)
+//                   .snapshots(),
+//               builder: (context, snapshot) {
+//                 return Container(
+//                   width: double.infinity,
+//                   child: Column(
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Container(
+//                         width: double.infinity,
+//                         height: MediaQuery.of(context).size.height * 0.562,
+//                         child: new Swiper(
+//                           itemBuilder: (BuildContext context, int index) {
+//                             return Container(
+//                               child: Image.network(
+//                                 snapshot.data.data()['image'],
+//                                 fit: BoxFit.cover,
+//                               ),
+//                             );
+//                           },
+//                           itemCount: 6,
+//                           viewportFraction: 1,
+//                           scale: 1,
+//                           pagination: SwiperPagination(
+//                             builder: DotSwiperPaginationBuilder(
+//                                 activeColor: kMainColor),
+//                           ),
+//                         ),
+//                       ),
+//                       //TODO section 2 seller profile
+//                       Container(
+//                         decoration: BoxDecoration(
+//                             border: Border(
+//                               bottom: BorderSide(
+//                                 width: 1,
+//                                 color: Color(0xFFF0F0F0),
+//                               ),
+//                             )),
+//                         padding: EdgeInsets.only(
+//                             left: 18, right: 18, top: 18, bottom: 10),
+//                         child: Row(
+//                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                           children: [
+//                             Row(
+//                               children: [
+//                                 CircleAvatar(
+//                                   maxRadius: 21,
+//                                   backgroundImage:
+//                                   AssetImage('assets/images/user.png'),
+//                                 ),
+//                                 SizedBox(
+//                                   width: 8,
+//                                 ),
+//                                 Column(
+//                                   crossAxisAlignment: CrossAxisAlignment.start,
+//                                   mainAxisAlignment:
+//                                   MainAxisAlignment.spaceEvenly,
+//                                   children: [
+//                                     Text(
+//                                       snapshot.data.data()['sellerId'] ??
+//                                           user.displayName,
+//                                       style: TextStyle(
+//                                           fontSize: 16,
+//                                           fontWeight: FontWeight.w700),
+//                                     ),
+//                                     SizedBox(height: 2),
+//                                     Text(
+//                                       snapshot.data.data()['place'],
+//                                       style: TextStyle(fontSize: 12),
+//                                     ),
+//                                   ],
+//                                 ),
+//                               ],
+//                             ),
+//                             ManorTemperature(
+//                                 manorTemp:
+//                                 snapshot.data.data()['temperature'] ?? 32),
+//                           ],
+//                         ),
+//                       ),
+//                       //TODO Section3 about item (상품설명)
+//                       Container(
+//                         padding:
+//                         EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+//                         child: Column(
+//                           crossAxisAlignment: CrossAxisAlignment.start,
+//                           children: [
+//                             Text(
+//                               snapshot.data.data()['title'] ?? '제목이 없습니',
+//                               style: TextStyle(
+//                                 fontSize: 20,
+//                                 fontWeight: FontWeight.w700,
+//                               ),
+//                             ),
+//                             Container(
+//                               padding: EdgeInsets.symmetric(vertical: 10),
+//                               child: Text(
+//                                 '전자제품  3분전',
+//                                 style: TextStyle(
+//                                     color: Colors.grey.shade600, fontSize: 12),
+//                               ),
+//                             ),
+//                             Container(
+//                               child: Text(
+//                                 snapshot.data.data()['aboutItem'],
+//                                 style: TextStyle(fontSize: 16, height: 1.25),
+//                               ),
+//                             )
+//                           ],
+//                         ),
+//                       ),
+//                       SizedBox(
+//                         height: 30,
+//                       ),
+//                       //TODO section 4 extra information grid part
+//                       Container(
+//                           padding: EdgeInsets.only(
+//                               left: 18, right: 18, top: 18, bottom: 10),
+//                           child: Column(
+//                             children: [
+//                               Container(
+//                                 alignment: Alignment.centerLeft,
+//                                 height: 68,
+//                                 width: double.infinity,
+//                                 child: Text(
+//                                   '이 게시글 신고하기',
+//                                   style: TextStyle(
+//                                       fontSize: 18, fontWeight: FontWeight.w700),
+//                                 ),
+//                                 decoration: BoxDecoration(
+//                                     border: Border(
+//                                       top: BorderSide(
+//                                         width: 1,
+//                                         color: Colors.grey.shade300,
+//                                       ),
+//                                       bottom: BorderSide(
+//                                           width: 1, color: Colors.grey.shade300),
+//                                     )),
+//                               ),
+//                             ],
+//                           )),
+//                     ],
+//                   ),
+//                 );
+//               }),
+//         ),
+//       );
+//     }
 //   }
-// }

@@ -19,20 +19,26 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  List<bool> _likes;
+  bool hi;
   final _firestore = FirebaseFirestore.instance;
+  final _auth = FirebaseAuth.instance;
   final user = FirebaseAuth.instance.currentUser;
-  bool isLiked;
+  bool _isLiked;
   Future<int> getInt() {
     return FirebaseFirestore.instance.collection('Items').snapshots().length;
   }
 
-  bool _isLiked;
   String selectedPlace = "수유동";
   final storeLength =
       FirebaseFirestore.instance.collection('Items').snapshots().length;
   @override
   void initState() {
-    // print(store.collection('Items').doc('title'));
+    Future.delayed(Duration.zero, () async {
+      await _firestore.collection('user').doc(_auth.currentUser.uid).set({
+        "likes": [],
+      });
+    });
     print(storeLength);
     super.initState();
   }
@@ -159,20 +165,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     return GestureDetector(
                       onTap: () {
                         provider.selectedId = snapshot.data.docs[index].id;
-                        FirebaseFirestore.instance
-                            .collection('Items')
-                            .doc(provider.selectedId)
-                            .get()
-                            .then((DocumentSnapshot ds) {
-                          _isLiked = ds.data()['likedNow'] == false;
-                          provider.likedAbout = _isLiked;
-                        });
 
                         // Navigator.pushNamed(context, ItemDetail.id);
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ItemDetail()));
+                        Navigator.pushNamed(context, ItemDetail.id);
                       },
                       child: Container(
                         child: Row(
@@ -237,10 +232,61 @@ class _HomeScreenState extends State<HomeScreen> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.end,
                                         children: [
-                                          SvgPicture.asset(
-                                            'assets/svg/heart_off.svg',
-                                            width: 14,
-                                          ),
+                                          StreamBuilder(
+                                              stream: _firestore
+                                                  .collection('user')
+                                                  .doc(_auth.currentUser.uid)
+                                                  .snapshots(),
+                                              builder: (context, userSnapshot) {
+                                                if (userSnapshot.hasError) {
+                                                  return Text('Error');
+                                                }
+                                                if (userSnapshot
+                                                        .connectionState ==
+                                                    ConnectionState.waiting) {
+                                                  return CircularProgressIndicator();
+                                                }
+                                                return IconButton(
+                                                  onPressed: () async {
+                                                    if (userSnapshot.data
+                                                        .data()['likes']
+                                                        .contains(provider
+                                                            .selectedId)) {
+                                                      await _firestore
+                                                          .collection('user')
+                                                          .doc(_auth
+                                                              .currentUser.uid)
+                                                          .update({
+                                                        "likes": FieldValue
+                                                            .arrayRemove([
+                                                          provider.selectedId
+                                                        ])
+                                                      });
+                                                    } else {
+                                                      await _firestore
+                                                          .collection('user')
+                                                          .doc(_auth
+                                                              .currentUser.uid)
+                                                          .update({
+                                                        "likes": FieldValue
+                                                            .arrayUnion([
+                                                          provider.selectedId
+                                                        ])
+                                                      });
+                                                    }
+                                                  },
+                                                  icon: Icon(
+                                                      userSnapshot.data
+                                                              .data()['likes']
+                                                              .contains(provider
+                                                                  .selectedId)
+                                                          ? Icons.favorite
+                                                          : Icons
+                                                              .favorite_border,
+                                                      size: 26,
+                                                      color: kMainColor),
+                                                );
+                                              }),
                                           SizedBox(
                                             width: 4,
                                           ),
