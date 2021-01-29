@@ -1,21 +1,13 @@
 import 'package:flutter/material.dart';
 
 class ManorTemperature extends StatelessWidget {
-  final double manorTemp;
+  double manorTemp;
   int level;
-  ManorTemperature({Key key, @required this.manorTemp, this.level: 2}) {
+  ManorTemperature({Key key, this.manorTemp}) {
     _calcTempLevel();
   }
 
   void _calcTempLevel() {
-    var count = 0;
-    switch (count) {
-      case 0:
-        return print(count);
-      case 1:
-        return print('tnpt');
-    }
-
     if (20 >= manorTemp) {
       level = 0;
     } else if (20 < manorTemp && 32 >= manorTemp) {
@@ -28,7 +20,7 @@ class ManorTemperature extends StatelessWidget {
       level = 4;
     } else if (50 < manorTemp) {
       level = 5;
-    } else {}
+    }
   }
 
   final List<Color> tempPerColors = [
@@ -50,11 +42,10 @@ class ManorTemperature extends StatelessWidget {
             "${manorTemp}°C",
             style: TextStyle(
               color: tempPerColors[level],
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 5),
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: Container(
@@ -101,7 +92,10 @@ class ManorTemperature extends StatelessWidget {
           SizedBox(height: 5),
           Text(
             "매너온도",
-            style: TextStyle(fontSize: 12, color: Colors.grey),
+            style: TextStyle(
+                decoration: TextDecoration.underline,
+                fontSize: 12,
+                color: Colors.grey),
           )
         ],
       ),

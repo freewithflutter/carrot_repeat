@@ -124,6 +124,19 @@ class _ItemDetailState extends State<ItemDetail> {
                                     "likes": FieldValue.arrayRemove(
                                         [provider.selectedId])
                                   });
+                                  await _firestore
+                                      .collection('Items')
+                                      .doc(provider.selectedId)
+                                      .update({
+                                    'boolinga':
+                                        FieldValue.arrayRemove([user.uid])
+                                  });
+                                  // await ds.reference
+                                  //     .update({
+                                  //   'boolinga': FieldValue
+                                  //       .arrayRemove(
+                                  //       [user.uid])
+                                  // });
                                 } else {
                                   await _firestore
                                       .collection('user')
@@ -131,6 +144,13 @@ class _ItemDetailState extends State<ItemDetail> {
                                       .update({
                                     "likes": FieldValue.arrayUnion(
                                         [provider.selectedId])
+                                  });
+                                  await _firestore
+                                      .collection('Items')
+                                      .doc(provider.selectedId)
+                                      .update({
+                                    'boolinga':
+                                        FieldValue.arrayUnion([user.uid])
                                   });
                                 }
                               },

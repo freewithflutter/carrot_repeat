@@ -35,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     Future.delayed(Duration.zero, () async {
-      await _firestore.collection('user').doc(_auth.currentUser.uid).set({
+      await _firestore.collection('Items').doc(_auth.currentUser.uid).set({
         "likes": [],
       });
     });
@@ -48,9 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return AppBar(
       elevation: 1,
       title: GestureDetector(
-        onTap: () {
-          setState(() {});
-        },
+        onTap: () {},
         child: PopupMenuButton<String>(
           shape: ShapeBorder.lerp(
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -238,6 +236,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   .doc(_auth.currentUser.uid)
                                                   .snapshots(),
                                               builder: (context, userSnapshot) {
+                                                DocumentSnapshot ds =
+                                                    snapshot.data.docs[index];
                                                 if (userSnapshot.hasError) {
                                                   return Text('Error');
                                                 }
@@ -248,10 +248,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 }
                                                 return IconButton(
                                                   onPressed: () async {
-                                                    if (userSnapshot.data
-                                                        .data()['likes']
-                                                        .contains(provider
-                                                            .selectedId)) {
+                                                    provider.selectedId =
+                                                        snapshot.data
+                                                            .docs[index].id;
+                                                    if (snapshot
+                                                        .data.docs[index]
+                                                        .data()['boolinga']
+                                                        .contains(user.uid)) {
                                                       await _firestore
                                                           .collection('user')
                                                           .doc(_auth
@@ -262,7 +265,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           provider.selectedId
                                                         ])
                                                       });
-                                                    } else {
+                                                      await ds.reference
+                                                          .update({
+                                                        'boolinga': FieldValue
+                                                            .arrayRemove(
+                                                                [user.uid])
+                                                      });
+                                                      await ds.reference
+                                                          .update({
+                                                        'likes': FieldValue
+                                                            .increment(-1)
+                                                      });
+                                                    } else if (!snapshot
+                                                        .data.docs[index]
+                                                        .data()['boolinga']
+                                                        .contains(user.uid)) {
                                                       await _firestore
                                                           .collection('user')
                                                           .doc(_auth
@@ -273,17 +290,35 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           provider.selectedId
                                                         ])
                                                       });
+                                                      await ds.reference
+                                                          .update({
+                                                        'boolinga': FieldValue
+                                                            .arrayUnion(
+                                                                [user.uid])
+                                                      });
+                                                      await ds.reference
+                                                          .update({
+                                                        'likes': FieldValue
+                                                            .increment(1)
+                                                      });
                                                     }
+                                                    // snapshot.data.docs[index].data()['likes'] < 0 ?
+                                                    // await ds.reference
+                                                    //     .update({
+                                                    //   'likes': FieldValue
+                                                    //       .(1)
+                                                    // });
                                                   },
                                                   icon: Icon(
-                                                      userSnapshot.data
-                                                              .data()['likes']
-                                                              .contains(provider
-                                                                  .selectedId)
+                                                      snapshot.data.docs[index]
+                                                              .data()[
+                                                                  'boolinga']
+                                                              .contains(
+                                                                  user.uid)
                                                           ? Icons.favorite
                                                           : Icons
                                                               .favorite_border,
-                                                      size: 26,
+                                                      size: 24,
                                                       color: kMainColor),
                                                 );
                                               }),
@@ -291,8 +326,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                             width: 4,
                                           ),
                                           Text(snapshot.data.docs[index]
-                                                  .data()['likes'] ??
-                                              '0'),
+                                                      .data()['likes'] >=
+                                                  1
+                                              ? '${snapshot.data.docs[index].data()['likes']}'
+                                              : ''),
                                         ],
                                       ),
                                     ),
