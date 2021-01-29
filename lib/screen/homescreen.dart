@@ -34,11 +34,11 @@ class _HomeScreenState extends State<HomeScreen> {
       FirebaseFirestore.instance.collection('Items').snapshots().length;
   @override
   void initState() {
-    Future.delayed(Duration.zero, () async {
-      await _firestore.collection('Items').doc(_auth.currentUser.uid).set({
-        "likes": [],
-      });
-    });
+    // Future.delayed(Duration.zero, () async {
+    //   await _firestore.collection('Items').doc(_auth.currentUser.uid).set({
+    //     "likes": [],
+    //   });
+    // });
     print(storeLength);
     super.initState();
   }
@@ -172,8 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             ClipRRect(
                               child: Image.network(
-                                snapshot.data?.docs[index].data()['image'] ??
-                                    '',
+                                snapshot.data.docs[index].data()['image'],
                                 width: 110,
                                 height: 110,
                                 fit: BoxFit.cover,
