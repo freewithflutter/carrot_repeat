@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 //TODO Favorite item list up
@@ -26,6 +27,7 @@ class _MyPageState extends State<MyPage> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
     final provider = Provider.of<ItemProvider>(context, listen: false);
 
     return Scaffold(
@@ -73,12 +75,12 @@ class _MyPageState extends State<MyPage> {
                                 child: StreamBuilder(
                                     stream: FirebaseFirestore.instance
                                         .collection('Items')
-                                        .where('booliga', isEqualTo: _user.uid)
+                                        .where('boolinga',
+                                            arrayContains: _user.uid)
                                         .snapshots(),
                                     builder: (context, snapshot) {
                                       return ListView.builder(
                                         shrinkWrap: true,
-                                        physics: NeverScrollableScrollPhysics(),
                                         itemCount: snapshot.data.docs.length,
                                         itemBuilder:
                                             (BuildContext context, int index) {
@@ -89,34 +91,90 @@ class _MyPageState extends State<MyPage> {
                                                 horizontal: 15, vertical: 10),
                                             child: Row(
                                               children: [
-                                                GestureDetector(
-                                                  onTap: () {},
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10),
-                                                    child: Image.network(
-                                                      snapshot.data.docs[index]
-                                                          .data()['image'],
-                                                      width: 110,
-                                                      height: 110,
-                                                      fit: BoxFit.cover,
+                                                ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                  child: Image.network(
+                                                    snapshot.data.docs[index]
+                                                        .data()['image'],
+                                                    width: 110,
+                                                    height: 110,
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  width: 10,
+                                                ),
+                                                Expanded(
+                                                  child: Container(
+                                                    height: 110,
+                                                    child: Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .start,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Container(
+                                                              width:
+                                                                  width * 0.5,
+                                                              child: Container(
+                                                                child: Text(
+                                                                  snapshot
+                                                                          .data
+                                                                          .docs[
+                                                                              index]
+                                                                          .data()[
+                                                                      'title'],
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          15,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w500),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            GestureDetector(
+                                                              onTap: () {},
+                                                              child: Icon(Icons
+                                                                  .favorite_border),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        Text(
+                                                          snapshot
+                                                              .data.docs[index]
+                                                              .data()['place'],
+                                                          style: TextStyle(
+                                                              fontSize: 12,
+                                                              color:
+                                                                  kLightGrayBlueColor),
+                                                        ),
+                                                        SizedBox(
+                                                          height: 6,
+                                                        ),
+                                                        Text(
+                                                          '${NumberFormat('###,###,### 원').format(int.parse(snapshot.data?.docs[index].data()['price'] ?? ''))}',
+                                                          style: TextStyle(
+                                                              fontSize: 16,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w700),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
                                                 ),
-                                                // Container(
-                                                //   width: 110,
-                                                //   height: 110,
-                                                //   decoration: BoxDecoration(
-                                                //     borderRadius:
-                                                //         BorderRadius.circular(40),
-                                                //   ),
-                                                //   child: Image.network(
-                                                //     snapshot.data.docs[index]
-                                                //         .data()['image'],
-                                                //     fit: BoxFit.fill,
-                                                //   ),
-                                                // ),
                                               ],
                                             ),
                                           );
