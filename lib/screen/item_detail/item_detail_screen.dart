@@ -1,5 +1,6 @@
 import 'package:carrot_repeat/components/temparature.dart';
 import 'package:carrot_repeat/provider/item_provider.dart';
+import 'package:carrot_repeat/screen/homescreen.dart';
 import 'package:carrot_repeat/util/default.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +9,8 @@ import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+
+import '../anyscreen.dart';
 
 class ItemDetail extends StatefulWidget {
   static final String id = 'itemdetail';

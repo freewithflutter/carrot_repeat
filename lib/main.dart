@@ -3,7 +3,7 @@ import 'package:carrot_repeat/examnote.dart';
 import 'package:carrot_repeat/provider/google_sign_in_provider.dart';
 import 'package:carrot_repeat/provider/item_provider.dart';
 import 'package:carrot_repeat/screen/additem/additem_screen.dart';
-import 'package:carrot_repeat/screen/app.dart';
+import 'package:carrot_repeat/screen/anyscreen.dart';
 import 'package:carrot_repeat/screen/homescreen.dart';
 import 'package:carrot_repeat/screen/item_detail/item_detail_screen.dart';
 import 'package:carrot_repeat/screen/login/login_screeen.dart';
@@ -31,14 +31,16 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Carrot Repeat',
-        home: HomePage(),
+        home: AnyScreen(),
         theme: ThemeData(
           primaryColor: Colors.white,
         ),
         routes: {
+          AnyScreen.id: (context) => AnyScreen(),
           ItemDetail.id: (context) => ItemDetail(),
           AddItem.id: (context) => AddItem(),
           HomeScreen.id: (context) => HomeScreen(),
+          AnyScreen.id: (context) => AnyScreen()
           // ExamDetail.id: (context) => ExamDetail(),
         },
       ),
