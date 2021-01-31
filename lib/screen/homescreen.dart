@@ -14,6 +14,7 @@ import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomeScreen extends StatefulWidget {
+  static String id = 'homescreen';
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -39,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
     //     "likes": [],
     //   });
     // });
-    print(storeLength);
+
     super.initState();
   }
 

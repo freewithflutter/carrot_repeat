@@ -31,13 +31,14 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Carrot Repeat',
-        home: App(),
+        home: HomePage(),
         theme: ThemeData(
           primaryColor: Colors.white,
         ),
         routes: {
           ItemDetail.id: (context) => ItemDetail(),
           AddItem.id: (context) => AddItem(),
+          HomeScreen.id: (context) => HomeScreen(),
           // ExamDetail.id: (context) => ExamDetail(),
         },
       ),

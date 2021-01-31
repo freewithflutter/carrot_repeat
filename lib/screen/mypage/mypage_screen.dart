@@ -21,7 +21,6 @@ class _MyPageState extends State<MyPage> {
   String itemId;
   void initState() {
     FirebaseFirestore.instance.collection('user').doc();
-
     super.initState();
   }
 
@@ -46,6 +45,7 @@ class _MyPageState extends State<MyPage> {
               child: Column(
                 children: [
                   TabBar(
+                    indicatorColor: kMainColor,
                     tabs: [
                       Tab(
                         child: Text('중고거래'),
@@ -144,11 +144,110 @@ class _MyPageState extends State<MyPage> {
                                                                 ),
                                                               ),
                                                             ),
-                                                            GestureDetector(
-                                                              onTap: () {},
-                                                              child: Icon(Icons
-                                                                  .favorite_border),
-                                                            ),
+                                                            StreamBuilder(
+                                                                stream: FirebaseFirestore
+                                                                    .instance
+                                                                    .collection(
+                                                                        'user')
+                                                                    .doc(_user
+                                                                        .uid)
+                                                                    .snapshots(),
+                                                                builder: (context,
+                                                                    userSnapshot) {
+                                                                  DocumentSnapshot
+                                                                      ds =
+                                                                      snapshot
+                                                                          .data
+                                                                          .docs[index];
+                                                                  if (snapshot
+                                                                      .hasError) {
+                                                                    return Text(
+                                                                        'Check Error');
+                                                                  }
+                                                                  if (snapshot
+                                                                          .connectionState ==
+                                                                      ConnectionState
+                                                                          .waiting) {
+                                                                    return CircularProgressIndicator();
+                                                                  }
+                                                                  return GestureDetector(
+                                                                    onTap:
+                                                                        () async {
+                                                                      provider.selectedId = snapshot
+                                                                          .data
+                                                                          .docs[
+                                                                              index]
+                                                                          .id;
+                                                                      if (snapshot
+                                                                          .data
+                                                                          .docs[
+                                                                              index]
+                                                                          .data()[
+                                                                              'boolinga']
+                                                                          .contains(
+                                                                              _user.uid)) {
+                                                                        await _firestore
+                                                                            .collection('user')
+                                                                            .doc(_user.uid)
+                                                                            .update({
+                                                                          "likes":
+                                                                              FieldValue.arrayRemove([
+                                                                            provider.selectedId
+                                                                          ])
+                                                                        });
+                                                                        await ds
+                                                                            .reference
+                                                                            .update({
+                                                                          'boolinga':
+                                                                              FieldValue.arrayRemove([
+                                                                            _user.uid
+                                                                          ])
+                                                                        });
+                                                                        await ds
+                                                                            .reference
+                                                                            .update({
+                                                                          'likes':
+                                                                              FieldValue.increment(-1)
+                                                                        });
+                                                                      } else if (!snapshot
+                                                                          .data
+                                                                          .docs[
+                                                                              index]
+                                                                          .data()[
+                                                                              'boolinga']
+                                                                          .contains(
+                                                                              _user.uid)) {
+                                                                        await _firestore
+                                                                            .collection('user')
+                                                                            .doc(_user.uid)
+                                                                            .update({
+                                                                          "likes":
+                                                                              FieldValue.arrayUnion([
+                                                                            provider.selectedId
+                                                                          ])
+                                                                        });
+                                                                        await ds
+                                                                            .reference
+                                                                            .update({
+                                                                          'boolinga':
+                                                                              FieldValue.arrayUnion([
+                                                                            _user.uid
+                                                                          ])
+                                                                        });
+                                                                      }
+                                                                    },
+                                                                    child: Icon(
+                                                                        snapshot.data.docs[index].data()['boolinga'].contains(_user.uid)
+                                                                            ? Icons
+                                                                                .favorite
+                                                                            : Icons
+                                                                                .favorite_border,
+                                                                        size:
+                                                                            24,
+                                                                        color:
+                                                                            kMainColor),
+                                                                  );
+                                                                }),
                                                           ],
                                                         ),
                                                         Text(
